@@ -98,18 +98,20 @@ export function crearPaletaUI(rootId: string) {
       paletas.forEach((paleta: any) => {
         const paletaDiv = document.createElement("div");
         paletaDiv.className = "paleta";
-        paletaDiv.style.border = "1px solid #ccc";
+        paletaDiv.style.border = "1px solid #4c1d95";
+        paletaDiv.style.color = "#e0e0e0";
         paletaDiv.style.padding = "10px";
         paletaDiv.style.marginBottom = "10px";
         paletaDiv.style.borderRadius = "6px";
         paletaDiv.style.transition = "all 0.3s ease";
+        paletaDiv.style.background = "#0f172a";
 
         paletaDiv.innerHTML = `
-          <h3>${paleta.nombre}</h3>
+          <h3 style="color: #a78bfa; margin-bottom: 8px;">${paleta.nombre}</h3>
           <div style="display:flex; gap:5px; margin-bottom:8px;">
             ${paleta.colores.map((c: string) =>
               `<span style="width:20px;height:20px;background:${c};
-                display:inline-block;border-radius:4px;border:1px solid #0002;"></span>`
+                display:inline-block;border-radius:4px;border:1px solid #1e293b;"></span>`
             ).join("")}
           </div>
           <button class="btn-borrar" data-id="${paleta.id}">
@@ -125,7 +127,80 @@ export function crearPaletaUI(rootId: string) {
     }
   }
 
-  // ✅ Borrado con confirmación + animación
+  // ✅ Función para mostrar modal de confirmación personalizado
+  function mostrarConfirmacion(mensaje: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      // Crear overlay
+      const overlay = document.createElement("div");
+      overlay.className = "modal-overlay";
+      overlay.id = "confirm-modal";
+
+      // Crear contenido del modal
+      overlay.innerHTML = `
+        <div class="modal-content">
+          <h3>⚠️ Confirmar eliminación</h3>
+          <p>${mensaje}</p>
+          <div class="modal-buttons">
+            <button class="modal-btn modal-btn-confirm" id="confirm-yes">Sí, eliminar</button>
+            <button class="modal-btn modal-btn-cancel" id="confirm-no">Cancelar</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+
+      // Mostrar modal con animación
+      setTimeout(() => {
+        overlay.classList.add("active");
+      }, 10);
+
+      // Botón confirmar
+      const btnYes = overlay.querySelector("#confirm-yes") as HTMLElement;
+      btnYes.addEventListener("click", () => {
+        overlay.classList.remove("active");
+        setTimeout(() => {
+          overlay.remove();
+          resolve(true);
+        }, 300);
+      });
+
+      // Botón cancelar
+      const btnNo = overlay.querySelector("#confirm-no") as HTMLElement;
+      btnNo.addEventListener("click", () => {
+        overlay.classList.remove("active");
+        setTimeout(() => {
+          overlay.remove();
+          resolve(false);
+        }, 300);
+      });
+
+      // Cerrar al hacer clic fuera del modal
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) {
+          overlay.classList.remove("active");
+          setTimeout(() => {
+            overlay.remove();
+            resolve(false);
+          }, 300);
+        }
+      });
+
+      // Cerrar con ESC
+      const handleEsc = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          overlay.classList.remove("active");
+          setTimeout(() => {
+            overlay.remove();
+            resolve(false);
+          }, 300);
+          document.removeEventListener("keydown", handleEsc);
+        }
+      };
+      document.addEventListener("keydown", handleEsc);
+    });
+  }
+
+  // ✅ Borrado con confirmación personalizada + animación
   document.addEventListener("click", async (e) => {
     const target = e.target as HTMLElement;
     
@@ -134,7 +209,7 @@ export function crearPaletaUI(rootId: string) {
     
     if (btnBorrar) {
       const id = btnBorrar.dataset.id!;
-      const confirmar = confirm("¿Seguro que deseas borrar esta paleta?");
+      const confirmar = await mostrarConfirmacion("¿Seguro que deseas borrar esta paleta?");
       if (!confirmar) return;
 
       const paletaDiv = btnBorrar.closest(".paleta") as HTMLElement;

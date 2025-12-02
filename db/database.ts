@@ -2,7 +2,6 @@ import Database from "better-sqlite3";
 import path from "path";
 import type { ColoresPaleta } from "../types/types";
 
-// ✅ __dirname FUNCIONA EN COMMONJS CON ts-node
 const dbPath = path.join(__dirname, "../data/paletas.db");
 
 const db = new Database(dbPath);
