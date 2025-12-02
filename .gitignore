@@ -1,0 +1,87 @@
+# Dependencias
+node_modules/
+frontend/node_modules/
+package-lock.json
+frontend/package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Base de datos
+*.db
+*.sqlite
+*.sqlite3
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+
+# Archivos compilados
+dist/
+build/
+*.js
+*.js.map
+!frontend/vite.config.js
+frontend/dist/
+frontend/build/
+
+# Archivos TypeScript compilados (si se compilan en el mismo directorio)
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
+
+# Variables de entorno
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Sistema operativo
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# IDEs y editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Archivos temporales
+*.tmp
+*.temp
+.cache/
+.temp/
+
+# Coverage y testing
+coverage/
+.nyc_output/
+*.lcov
+
+# Archivos de configuración local
+config/local.json
+*.local.json
+
+# Archivos de respaldo
+*.bak
+*.backup
+*~
+
