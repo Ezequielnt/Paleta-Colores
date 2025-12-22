@@ -1,0 +1,59 @@
+services:
+  # --- Frontend (Vite + TypeScript) ---
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ts-frontend-1
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # --- API Backend (Node.js + TypeScript) ---
+  api:
+    build: .                 # Construye usando el Dockerfile de la raíz
+    container_name: ts-api-1 # Nombre fijo para identificarlo fácil en logs
+    ports:
+      - "3000:3000"          # Tu PC (3000) -> Contenedor (3000)
+    environment:
+      - DB_HOST=db           # ¡Importante! 'db' es el nombre del servicio de abajo
+      - DB_USER=root
+      - DB_PASS=root
+      - DB_NAME=colores_db
+      - PORT=3000
+    depends_on:
+      - db                   # Docker intentará iniciar la DB antes que la API
+    
+    # --- HOT RELOAD (La magia para desarrollar) ---
+    command: npm run dev     # Ejecuta nodemon en lugar del build de producción
+    volumes:
+      - ./:/app              # ESPEJO: Lo que editas en Windows se refleja en /app
+      - /app/node_modules    # ESCUDO: Evita que Windows rompa las librerías de Linux
+    # ---------------------------------------------
+
+  # --- Base de Datos MySQL ---
+  db:
+    image: mysql:8.0
+    container_name: mi_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: colores_db # Crea la base de datos vacía al inicio
+    ports:
+      - "3306:3306"          # Permite conectar herramientas externas (DBeaver, Workbench)
+    volumes:
+      - ./data:/var/lib/mysql # PERSISTENCIA: Los datos se guardan en tu carpeta 'data'
+
+  # --- phpMyAdmin (Panel Visual) ---
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: mi_pma
+    links:
+      - db
+    ports:
+      - "8080:80"            # Acceso por http://localhost:8080
+    environment:
+      PMA_HOST: db
+      PMA_ARBITRARY: 1       # Te permite escribir 'db' manualmente en el login si hace falta

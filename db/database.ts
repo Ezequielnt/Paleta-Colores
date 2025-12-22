@@ -1,63 +1,88 @@
-import Database from "better-sqlite3";
-import path from "path";
+import mysql from "mysql2/promise";
 import type { ColoresPaleta } from "../types/types";
 
-const dbPath = path.join(__dirname, "../data/paletas.db");
+// Configuración del Pool
+const pool = mysql.createPool({
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASS || "root",
+  database: process.env.DB_NAME || "colores_db",
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+});
 
-const db = new Database(dbPath);
+// ✅ FUNCION DE ESPERA (Delay)
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// ✅ CREAR TABLA SI NO EXISTE
-db.exec(`
-  CREATE TABLE IF NOT EXISTS paletas (
-    id TEXT PRIMARY KEY,
-    nombre TEXT NOT NULL,
-    colores TEXT NOT NULL
-  )
-`);
+// ✅ INICIALIZAR CON REINTENTOS (La clave del éxito)
+export async function iniciarBaseDeDatos() {
+  let intentos = 10;
+  
+  while (intentos > 0) {
+    try {
+      // Intentamos obtener una conexión del pool
+      const connection = await pool.getConnection();
+      
+      console.log("✅ Conexión a MySQL exitosa. Verificando tabla...");
+      
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS paletas (
+          id VARCHAR(255) PRIMARY KEY,
+          nombre VARCHAR(255) NOT NULL,
+          colores TEXT NOT NULL
+        )
+      `);
+      
+      connection.release();
+      console.log("🚀 Tabla 'paletas' lista.");
+      return; // Éxito, salimos de la función
 
+    } catch (error: any) {
+      console.log(`❌ Error conectando a DB (Intentos restantes: ${intentos})...`);
+      console.log(`   Razón: ${error.code || error.message}`);
+      
+      intentos--;
+      await wait(5000); // Esperamos 5 segundos antes de reintentar
+    }
+  }
+  
+  console.error("💀 No se pudo conectar a la base de datos después de varios intentos.");
+}
+
+// Llamamos a la inicialización
+iniciarBaseDeDatos();
+
+// ... (El resto de tus funciones guardarPaleta, etc. siguen igual)
 // ✅ GENERAR ID
 function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2);
 }
 
-// ✅ GUARDAR PALETA
-export function guardarPaleta(nombre: string, colores: string[]): ColoresPaleta {
+export async function guardarPaleta(nombre: string, colores: string[]): Promise<ColoresPaleta> {
   const id = generateId();
   const coloresJson = JSON.stringify(colores);
-
-  const stmt = db.prepare(
-    "INSERT INTO paletas (id, nombre, colores) VALUES (?, ?, ?)"
+  await pool.query(
+    "INSERT INTO paletas (id, nombre, colores) VALUES (?, ?, ?)",
+    [id, nombre, coloresJson]
   );
-  stmt.run(id, nombre, coloresJson);
-
-  return {
-    id,
-    nombre,
-    colores: colores as unknown as string[10],
-  };
+  return { id, nombre, colores: colores as unknown as string[10] };
 }
 
-// ✅ OBTENER TODAS
-export function obtenerTodasLasPaletas(): ColoresPaleta[] {
-  const stmt = db.prepare("SELECT * FROM paletas");
-  const rows = stmt.all() as Array<{ id: string; nombre: string; colores: string }>;
-
-  return rows.map(row => ({
+export async function obtenerTodasLasPaletas(): Promise<ColoresPaleta[]> {
+  const [rows] = await pool.query("SELECT * FROM paletas");
+  return (rows as any[]).map((row) => ({
     id: row.id,
     nombre: row.nombre,
     colores: JSON.parse(row.colores) as string[10],
   }));
 }
 
-// ✅ OBTENER POR ID
-export function obtenerPaletaPorId(id: string): ColoresPaleta | null {
-  const stmt = db.prepare("SELECT * FROM paletas WHERE id = ?");
-  const row = stmt.get(id) as
-    | { id: string; nombre: string; colores: string }
-    | undefined;
-
-  if (!row) return null;
-
+export async function obtenerPaletaPorId(id: string): Promise<ColoresPaleta | null> {
+  const [rows] = await pool.query("SELECT * FROM paletas WHERE id = ?", [id]);
+  const resultados = rows as any[];
+  if (resultados.length === 0) return null;
+  const row = resultados[0];
   return {
     id: row.id,
     nombre: row.nombre,
@@ -65,20 +90,12 @@ export function obtenerPaletaPorId(id: string): ColoresPaleta | null {
   };
 }
 
-export function cerrarBaseDeDatos(): void {
-  db.close();
+export async function existePaletaConNombre(nombre: string): Promise<boolean> {
+  const [rows] = await pool.query("SELECT id FROM paletas WHERE nombre = ?", [nombre]);
+  return (rows as any[]).length > 0;
 }
 
-export default db;
-
-export function existePaletaConNombre(nombre: string): boolean {
-  const stmt = db.prepare("SELECT id FROM paletas WHERE nombre = ?");
-  const row = stmt.get(nombre);
-  return !!row;
-}
-
-export function eliminarPaleta(id: string): boolean {
-  const stmt = db.prepare("DELETE FROM paletas WHERE id = ?");
-  const result = stmt.run(id);
-  return result.changes > 0;
+export async function eliminarPaleta(id: string): Promise<boolean> {
+  const [result] = await pool.query("DELETE FROM paletas WHERE id = ?", [id]);
+  return (result as any).affectedRows > 0;
 }

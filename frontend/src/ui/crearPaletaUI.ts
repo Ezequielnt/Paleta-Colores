@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:3000";
+const API_URL = window.location.hostname === "localhost"
+  ? "http://localhost:3000"
+  : window.location.origin;
 
 export function crearPaletaUI(rootId: string) {
   const app = document.getElementById(rootId);
@@ -10,7 +12,7 @@ export function crearPaletaUI(rootId: string) {
     <h2>Crear nueva paleta</h2>
     <input id="nombre" placeholder="Nombre de la paleta" />
 
-    <div id="colores" style="display:flex; gap:8px; margin:10px 0;"></div>
+    <div id="colores"></div>
 
     <button id="guardar">Guardar paleta</button>
 
@@ -20,7 +22,7 @@ export function crearPaletaUI(rootId: string) {
     <h2>Paletas guardadas</h2>
     <button id="cargar">Cargar paletas</button>
 
-    <div id="lista" style="margin-top:20px;"></div>
+    <div id="lista"></div>
   `;
 
   const coloresDiv = document.getElementById("colores")!;
@@ -98,24 +100,15 @@ export function crearPaletaUI(rootId: string) {
       paletas.forEach((paleta: any) => {
         const paletaDiv = document.createElement("div");
         paletaDiv.className = "paleta";
-        paletaDiv.style.border = "1px solid #4c1d95";
-        paletaDiv.style.color = "#e0e0e0";
-        paletaDiv.style.padding = "10px";
-        paletaDiv.style.marginBottom = "10px";
-        paletaDiv.style.borderRadius = "6px";
-        paletaDiv.style.transition = "all 0.3s ease";
-        paletaDiv.style.background = "#0f172a";
-
         paletaDiv.innerHTML = `
-          <h3 style="color: #a78bfa; margin-bottom: 8px;">${paleta.nombre}</h3>
-          <div style="display:flex; gap:5px; margin-bottom:8px;">
+          <h3>${paleta.nombre}</h3>
+          <div class="color-samples">
             ${paleta.colores.map((c: string) =>
-              `<span style="width:20px;height:20px;background:${c};
-                display:inline-block;border-radius:4px;border:1px solid #1e293b;"></span>`
+              `<span class="color-sample" style="background:${c};"></span>`
             ).join("")}
           </div>
           <button class="btn-borrar" data-id="${paleta.id}">
-            ❌ Eliminar
+            🗑️ Eliminar
           </button>
         `;
 

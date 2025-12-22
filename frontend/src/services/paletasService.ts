@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:3000";
+const API_URL = window.location.hostname === "localhost"
+  ? "http://localhost:3000"
+  : window.location.origin;
 
 export async function guardarPaleta(nombre: string, colores: string[]) {
   const res = await fetch(`${API_URL}/register`, {
@@ -16,7 +18,7 @@ export async function obtenerPaletas() {
 }
 
 export async function eliminarPaleta(id: string) {
-  const res = await fetch(`http://localhost:3000/paletas/${id}`, {
+  const res = await fetch(`${API_URL}/paletas/${id}`, {
     method: "DELETE"
   });
 

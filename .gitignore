@@ -14,6 +14,23 @@ data/*.db
 data/*.sqlite
 data/*.sqlite3
 
+# Archivos MySQL específicos (Docker)
+data/
+!data/.gitkeep
+*.dblwr
+#innodb_redo/
+*.sock
+*.CSV
+*.CSM
+*.sdi
+undo_*
+ib_*
+binlog*
+auto.cnf
+performance_schema/
+sys/
+mysql/
+
 # Archivos compilados
 dist/
 build/
@@ -25,6 +42,14 @@ frontend/build/
 
 # Archivos TypeScript compilados (si se compilan en el mismo directorio)
 *.tsbuildinfo
+dist/
+build/
+*.js
+*.js.map
+*.d.ts
+!vite.config.ts
+!jest.config.js
+!rollup.config.js
 
 # Logs
 logs/
@@ -42,6 +67,15 @@ pnpm-debug.log*
 .env.test.local
 .env.production.local
 .env*.local
+
+# Archivos de configuración con credenciales
+config/production.json
+config/staging.json
+secrets/
+*.key
+*.pem
+*.crt
+*.cer
 
 # Sistema operativo
 .DS_Store
@@ -65,6 +99,28 @@ Desktop.ini
 *.sublime-project
 *.sublime-workspace
 
+# Cursor IDE
+.cursor/
+.cursorignore
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Vim
+*.swp
+*.swo
+*~
+
 # Archivos temporales
 *.tmp
 *.temp
@@ -75,13 +131,93 @@ Desktop.ini
 coverage/
 .nyc_output/
 *.lcov
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Testing
+jest/
+.nyc_output/
+coverage/
+.coverage/
+test-results/
+*.test.js
+*.spec.js
 
 # Archivos de configuración local
 config/local.json
 *.local.json
+*.development.json
+*.production.json
+*.staging.json
+
+# Archivos de configuración con datos sensibles
+config/database.json
+config/secrets.json
+*.key
+*.pem
+*.crt
+*.cer
+*.p12
+*.pfx
 
 # Archivos de respaldo
 *.bak
 *.backup
 *~
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+docker-compose.local.yml
+.env.docker
+docker/volumes/
+docker/logs/
+
+# Carpetas duplicadas o temporales
+frontend/frontend/
+tmp/
+temp/
+
+# Archivos de configuración local
+.env
+.env.local
+.env.*.local
+config/local.*
+*.local.*
+
+# Logs específicos del proyecto
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Archivos de proceso
+*.pid
+*.seed
+*.pid.lock
+
+# Cobertura de código
+coverage/
+*.lcov
+.nyc_output/
+
+# Archivos del sistema
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
 
